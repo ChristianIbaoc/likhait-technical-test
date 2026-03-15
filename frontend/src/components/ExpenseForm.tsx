@@ -1,11 +1,11 @@
 /**
  * Form component for adding/editing expenses
  */
-
-import React from "react";
+import { fetchCategories } from "../services/api";
+import React, { useState } from "react";
 import { ExpenseFormData } from "../types";
 import { EXPENSE_CATEGORIES } from "../constants/categories";
-import { TextField, SelectBox, Button } from "../vibes";
+import { TextField, SelectBox, Button, Modal } from "../vibes";
 import { useExpenseForm } from "../hooks/useExpenseForm";
 
 interface ExpenseFormProps {
@@ -38,11 +38,33 @@ export function ExpenseForm({
     gap: "0.5rem",
     marginTop: "0.5rem",
   };
+  const [dropdownOptions, setDropdownOptions] = useState<string[]>([
+    ...EXPENSE_CATEGORIES,
+  ]);
 
-  const categoryOptions = EXPENSE_CATEGORIES.map((category) => ({
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+
+  const categoryOptions = dropdownOptions.map((category) => ({
     value: category,
     label: category,
   }));
+
+  React.useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categories = await fetchCategories();
+        setDropdownOptions([
+          ...categories.map((c) => c.name),
+          "Add New Category",
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -68,17 +90,21 @@ export function ExpenseForm({
         fullWidth
         required
       />
-
       <SelectBox
         label="Category"
         options={categoryOptions}
         value={formData.category}
-        onChange={(e) => handleChange("category", e.target.value)}
+        onChange={(e) => {
+          if (e.target.value === "Add New Category") {
+            setIsModalOpen(true);
+          } else {
+            handleChange("category", e.target.value);
+          }
+        }}
         error={errors.category}
         fullWidth
         required
       />
-
       <TextField
         label="Date"
         type="date"
@@ -88,6 +114,41 @@ export function ExpenseForm({
         fullWidth
         required
       />
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add New Category"
+      >
+        <TextField
+          label="Category Name"
+          type="text"
+          value={newCategory}
+          onChange={(e) => setNewCategory(e.target.value)}
+        ></TextField>
+        <Button
+          variant="primary"
+          onClick={() => {
+            console.log("New category added:", newCategory);
+            if (newCategory.trim() !== "") {
+              setDropdownOptions((prev) => {
+                const listWithoutAddNew = prev.filter(
+                  (c) => c !== "Add New Category",
+                );
+                return [...listWithoutAddNew, newCategory, "Add New Category"];
+              });
+              handleChange("category", newCategory);
+              setIsModalOpen(false);
+              setNewCategory("");
+            }
+          }}
+        >
+          Add Category
+        </Button>
+        <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+          Cancel
+        </Button>
+      </Modal>
 
       <div style={buttonGroupStyle}>
         <Button

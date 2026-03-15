@@ -52,7 +52,11 @@ export async function fetchCategories(): Promise<
 export async function createExpense(data: ExpenseFormData): Promise<Expense> {
   // Convert category name to category_id
   const categories = await fetchCategories();
-  const category = categories.find((c) => c.name === data.category);
+  let category = categories.find((c) => c.name === data.category);
+
+  if (!category) {
+    category = await createCategory(data.category);
+  }
 
   const expenseData = {
     description: data.description,
@@ -109,4 +113,18 @@ export async function deleteExpense(id: number): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to delete expense");
   }
+}
+
+export async function createCategory(name: string): Promise<{ id: number; name: string }> {
+  const response = await fetch(`${API_BASE_URL}/categories`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ category: { name } }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create category");
+  }
+  return response.json();
 }
