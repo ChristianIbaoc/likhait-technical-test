@@ -4,6 +4,7 @@ services:
   db:
     image: mysql:8.0
     container_name: expense_system_db
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: expense_system_development
@@ -13,7 +14,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      #- ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test:
         [
@@ -42,8 +43,8 @@ services:
       DATABASE_HOST: db
       DATABASE_PORT: 3306
       DATABASE_NAME: expense_system_development
-      DATABASE_USERNAME: expense_user
-      DATABASE_PASSWORD: expense_password
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: rootpassword
     ports:
       - "3000:3000"
     depends_on:
@@ -55,9 +56,9 @@ services:
     command: >
       sh -c "
         bundle install &&
-        rails db:migrate &&
-        rails db:seed &&
-        rails server -b 0.0.0.0
+        bundle exec rails db:migrate &&
+        bundle exec rails db:seed &&
+        bundle exec rails server -b 0.0.0.0
       "
     networks:
       - expense_network

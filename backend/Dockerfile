@@ -9,7 +9,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential ca-certificates default-mysql-client default-libmysqlclient-dev git && \
+    apt-get install --no-install-recommends -y build-essential libyaml-dev libffi-dev zlib1g-dev ca-certificates default-mysql-client default-libmysqlclient-dev git && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -23,6 +23,9 @@ RUN bundle config set --local deployment 'false' && \
 # Copy application code
 COPY . .
 
+RUN sed -i 's/\r$//' /rails/bin/* && \
+    chmod +x /rails/bin/*
+
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile --gemfile app/ lib/
 
@@ -31,4 +34,4 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start the server by default
 EXPOSE 3000
-CMD ["rails", "server", "-b", "0.0.0.0"]
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
