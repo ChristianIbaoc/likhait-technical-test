@@ -87,6 +87,7 @@ export function ExpenseForm({
         error={errors.date}
         fullWidth
         required
+        max={new Date().toISOString().split("T")[0]} // Prevent future dates
       />
 
       <div style={buttonGroupStyle}>
