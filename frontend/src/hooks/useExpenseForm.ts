@@ -23,6 +23,7 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (field: keyof ExpenseFormData, value: string) => {
+    console.log(`Updating field ${field} with value:`, value);
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
     if (errors[field]) {

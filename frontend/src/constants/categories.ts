@@ -13,6 +13,7 @@ export const EXPENSE_CATEGORIES = [
   "Travel",
   "Personal",
   "Other",
+  "Add New Category",
 ] as const;
 
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
