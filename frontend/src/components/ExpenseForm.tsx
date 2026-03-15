@@ -1,7 +1,7 @@
 /**
  * Form component for adding/editing expenses
  */
-
+import { fetchCategories } from "../services/api";
 import React, { useState } from "react";
 import { ExpenseFormData } from "../types";
 import { EXPENSE_CATEGORIES } from "../constants/categories";
@@ -49,6 +49,22 @@ export function ExpenseForm({
     value: category,
     label: category,
   }));
+
+  React.useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categories = await fetchCategories();
+        setDropdownOptions([
+          ...categories.map((c) => c.name),
+          "Add New Category",
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
